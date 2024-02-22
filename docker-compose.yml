@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    env_file: .env
+    environment:
+      POSTGRES_DB: users
+    ports:
+      - "5432:5432"
+    networks:
+      - users-application-network
+    volumes:
+      - ./src/main/resources/migration:/docker-entrypoint-initdb.d
+
+  java:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/users
+    networks:
+      - users-application-network
+
+networks:
+  users-application-network:
+    driver: bridge
